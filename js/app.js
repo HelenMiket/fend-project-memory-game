@@ -1,17 +1,33 @@
 /*
- * Create a list that holds all of your cards
+ * Create a list that holds all of the cards
  */
 const deck = document.querySelector(".deck");
 const cards = [...deck.children];
 
+/*
+* Create a list that holds all of the stars
+*/
 const stars = document.querySelector(".stars");
 const threeStars = [...stars.children];
-const moves = document.querySelector(".moves");
 
-let openedCards = [];
-let matchedCards = [];
+/*
+* Variables that hold the score information
+*/
+const moves = document.querySelector(".moves");
 let moveCount = 0;
 let rating = 3;
+
+/*
+* Lists that holds the opened cards and matched cards
+*/
+let openedCards = [];
+let matchedCards = [];
+
+/*
+* Variables for setting the timer
+*/
+let countDownDate = new Date().getTime();
+let stopTimer = false;
 
 /*
  * Display the cards on the page
@@ -38,6 +54,9 @@ function restartGame() {
     moveCount = 0;
     updateRating();
     updateMoveCount();
+
+    stopTimer = false;
+    countDownDate = new Date().getTime();
 }
 
 // Shuffle function from http://stackoverflow.com/a/2450976
@@ -74,17 +93,15 @@ function cardClicked(evt) {
     moveCount++;
 
     var target = evt.target;
-    if (target.nodeName === "LI") {
+    if (target.nodeName === "LI" && matchedCards.indexOf(target) < 0 && openedCards.indexOf(target) < 0) {
         openCard(target);
 
         if (openedCards.length === 2) {
-
-
             if (cardsMatch(openedCards[0], openedCards[1])) {
                 lockOpenedCards();
-                console.log(matchedCards.length);
 
                 if (matchedCards.length === 16) {
+                    stopTimer = true;
                     showSuccessMessage();
                 }
             } else {
@@ -97,22 +114,33 @@ function cardClicked(evt) {
     updateMoveCount();
 }
 
+function openCard(card) {
+    card.classList.add("open", "show");
+    openedCards.push(card);
+}
+
+/*
+* Update the number of stars
+*/
 function updateRating() {
     const newRating = getRating();
-   
+
     if (rating > newRating) {
         for (let i = newRating; i < rating; i++) {
             stars.removeChild(threeStars[i]);
         }
-    }
-    else if (rating < newRating) {
+    } else if (rating < newRating) {
         for (let i = rating; i < newRating; i++) {
             stars.appendChild(threeStars[i]);
         }
     }
+
     rating = newRating;
 }
 
+/*
+* Get the number of stars based on the number of moves
+*/
 function getRating() {
     if (moveCount <= 4) {
         return 3;
@@ -127,11 +155,9 @@ function updateMoveCount() {
     moves.innerHTML = `${moveCount}`;
 }
 
-function openCard(card) {
-    card.classList.add("open", "show");
-    openedCards.push(card);
-}
-
+/*
+* Hide the symbol of the cards in the openedCards list and empty the list
+*/
 function hideOpenedCards() {
     openedCards.forEach(function (card) {
         card.classList.remove("open", "show");
@@ -140,6 +166,9 @@ function hideOpenedCards() {
     openedCards = [];
 }
 
+/*
+* Check if two cards matches
+*/
 function cardsMatch(card1, card2) {
     let result = true;
 
@@ -165,6 +194,9 @@ function cardsMatch(card1, card2) {
     return result;
 }
 
+/*
+* Lock the cards in the open position
+*/
 function lockOpenedCards() {
     if (openedCards.length !== 2) {
         return;
@@ -212,3 +244,28 @@ function playAgain() {
     modal.style.display = "none";
     restartGame();
 }
+
+// Update the count down every 1 second
+var x = setInterval(function () {
+
+    // Get todays date and time
+    var now = new Date().getTime();
+
+    // Find the distance between now an the count down date
+    var distance = now - countDownDate;
+
+    // Time calculations for days, hours, minutes and seconds
+    var days = Math.floor(distance / (1000 * 60 * 60 * 24));
+    var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+    var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+    // Output the result in "timer"
+    document.querySelector(".timer").innerHTML = days + "d " + hours + "h " +
+        minutes + "m " + seconds + "s ";
+
+    // If the count down is over 
+    if (stopTimer) {
+        clearInterval(x);
+    }
+}, 1000);
