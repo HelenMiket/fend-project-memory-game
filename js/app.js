@@ -36,6 +36,8 @@ let stopTimer = false;
  *   - add each card's HTML to the page
  */
 
+ document.onload = restartGame();
+
 const restart = document.querySelector(".restart");
 restart.addEventListener("click", restartGame, false);
 
